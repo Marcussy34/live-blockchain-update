@@ -1,0 +1,136 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+🎯 Goal
+Create a real-time dashboard that displays live block updates across multiple EVM-compatible blockchains, with each chain represented by a counter that increments when a new block is finalized — either natively (on Ethereum) or simulated via N confirmations (on other EVM chains).
+
+Think of it as a "multi-chain block heartbeat monitor" — each chain "ticks" independently in real time, giving users a visual sense of network activity across the Ethereum-compatible ecosystem.
+
+
+
+
+🧩 Key Features
+🔌 Real-time updates using eth_subscribe via WebSocket RPCs (Alchemy, Infura, or other providers)
+
+🧠 Supports both mined and finalized block tracking
+
+On chains like Ethereum (post-merge), finalized blocks are retrieved using:
+
+js
+eth_getBlockByNumber("finalized")
+On chains that don’t support finalization (e.g., Polygon, BSC, Celo, Rootstock, Avalanche), a fallback strategy is used:
+
+Mark blocks as "finalized" after N confirmations
+
+🧱 Clean, modular backend architecture
+
+Uses a BlockchainHandler class per chain
+
+Managed by a central BlockchainManager
+
+🖥️ Interactive frontend built in Next.js
+
+Displays counters per chain
+
+Optional UI enhancements like block number, timestamp, animations
+
+🌐 Easily extendable
+
+New chains are added by registering a handler with a WebSocket URL
+
+📦 Lightweight backend
+
+Built in Node.js + Socket.io
+
+Listens for new blocks and emits structured events to the frontend
+
+
+
+
+🛠️ Current Plan (What I’ve Figured Out So Far)
+✅ Focusing only on EVM-compatible blockchains for simplicity and shared tooling.
+
+✅ Using WebSocket RPCs (e.g., from Alchemy, Infura, or public endpoints) to listen for block events in real-time.
+
+✅ Using ethers.js to handle WebSocket providers and block subscriptions.
+
+✅ Implementing a modular backend system:
+
+Each chain is wrapped in a BlockchainHandler
+
+All handlers are managed by a shared BlockchainManager
+
+✅ Creating a Next.js frontend that connects to the backend via WebSocket and displays per-chain block activity in real time.
+
+✅ Simulating finality via N-block confirmations for chains that don’t support eth_getBlockByNumber("finalized"):
+
+Used for: Polygon, Binance Smart Chain (BSC), Celo, Rootstock, Avalanche
+
+Ethereum is the only chain using native finality
+
+
+🧱 Architecture Overview
+                           ┌────────────────────────────┐
+                           │   Frontend (Next.js App)   │
+                           │                            │
+                           │ - Displays chain list      │
+                           │ - Shows block counters     │
+                           │ - Receives real-time events│
+                           └────────────▲───────────────┘
+                                        │
+                         WebSocket (Socket.io)
+                                        │
+                                        ▼
+                        ┌────────────────────────┐
+                        │ Backend Node.js Server │
+                        │ (Express + Socket.io)  │
+                        │                        │
+                        │ - Hosts BlockchainManager
+                        │ - Spawns one BlockchainHandler
+                        │   per EVM chain
+                        │ - Tracks block events + finality
+                        │ - Emits structured updates to FE
+                        └────────────▲───────────┘
+                                     │
+                One WebSocket RPC per chain (eth_subscribe)
+                                     │
+                                     ▼
+    ┌────────────────────────────────────────────────────────────┐
+    │   Supported EVM-Compatible Chains via WebSocket RPC:       │
+    │                                                            │
+    │  • Ethereum (Mainnet or Sepolia) — ✅ Native finality       │
+    │  • Polygon                       — ❌ Use N-confirmations   │
+    │  • Celo                          — ❌ Use N-confirmations   │
+    │  • Rootstock (RSK)               — ❌ Use N-confirmations   │
+    │  • Avalanche (C-Chain)           — ❌ Use N-confirmations   │
+    │  • Binance Smart Chain (BSC)     — ❌ Use N-confirmations   │
+    └────────────────────────────────────────────────────────────┘
+
+
+
+📦 Data Structure (From Backend to Frontend)
+Each real-time event emitted by the backend uses a standardized JSON structure, e.g.:
+
+json
+{
+  "chain": "Polygon",
+  "blockNumber": 5123467,
+  "finalized": true,
+  "timestamp": 1711123131
+}
+
+
+
+🔄 Extensibility
+This system is designed to scale easily:
+
+➕ Add a new chain: just register a new BlockchainHandler with its WebSocket URL
+
+🖥 Add new UI elements: emit and display additional metadata (like miner address or gas used)
+
+🧠 Expand use case: track transaction volume, eth_subscribe("logs"), or even contract-specific events
+
+
+
